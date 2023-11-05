@@ -1,3 +1,4 @@
+import os
 import argparse
 import requests
 import pandas as pd
@@ -10,7 +11,10 @@ import logging
 
 SERVER_URL = "http://0.0.0.0:8000"
 
-# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
 logging.basicConfig(filename='logs/client.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 

@@ -2,12 +2,16 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import JSONResponse
 import pandas as pd
 import logging
+import os
 
 from utils import APIHandler, get_access_token, filter_hu_field, merge_external_data, resolve_label_color
 
 app = FastAPI()
 
-# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+log_dir = 'logs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
 logging.basicConfig(filename='logs/server.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
