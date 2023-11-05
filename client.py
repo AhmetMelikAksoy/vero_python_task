@@ -6,8 +6,13 @@ import json
 import openpyxl
 from openpyxl.styles import PatternFill
 from openpyxl.utils.dataframe import dataframe_to_rows
+import logging
 
 SERVER_URL = "http://0.0.0.0:8000"
+
+# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(filename='logs/client.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 def main():
     parser = argparse.ArgumentParser(description="Client for interacting with the REST API server.")
@@ -24,6 +29,7 @@ def main():
     response = requests.post("http://localhost:8000/process-vehicles/", json=payload)
 
     if response.status_code == 200:
+        logger.info("Successful request, new data recieved.")
         result = response.json()
         data = json.loads(result)
         df_server = pd.DataFrame(data)
@@ -91,13 +97,13 @@ def main():
                                 cell.font = openpyxl.styles.Font(color=aRGB_color_code)
 
             wb.save(excel_file_name)
-            print(f"Excel file '{excel_file_name}' with color-coding created.")
+            logger.info(f"Excel file '{excel_file_name}' with color-coding created.")
         else:
             df_server_keys.to_excel(excel_file_name, index=False, engine='openpyxl')
-            print(f"Excel file '{excel_file_name}' created.")
+            logger.info(f"Excel file '{excel_file_name}' created.")
 
     else:
-        print(f"Error: {response.status_code} - {response.text}")
+        logger.error(f"Error: {response.status_code} - {response.text}")
 
 
 if __name__ == "__main__":

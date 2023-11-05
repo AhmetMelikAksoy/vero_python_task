@@ -1,10 +1,15 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import JSONResponse
 import pandas as pd
+import logging
 
 from utils import APIHandler, get_access_token, filter_hu_field, merge_external_data, resolve_label_color
 
 app = FastAPI()
+
+# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(filename='logs/server.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 
 @app.post("/process-vehicles/")
@@ -14,21 +19,21 @@ async def process_vehicles(data: dict,
     try:
         json_data = data.get('data')
         df = pd.read_json(json_data, orient='split')
-        print("Data received successfully")
+        logger.info("Data received successfully")
     except Exception as e:
+        logger.error(f"Error processing JSON data: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Error processing JSON data: {str(e)}")
 
-    print(access_token)
     api_handler = APIHandler(access_token)
 
     merged_df = merge_external_data(api_handler, df_csv=df)
-    print("External data merged.")
+    logger.info("External data merged.")
     merged_df = filter_hu_field(merged_df)
-    print("Empty hu fields removed.")
+    logger.info("Empty hu fields removed.")
     try:
         merged_df['resolved_colorCode'] = merged_df['labelIds'].apply(lambda labelId: resolve_label_color(labelId, api_handler))
     except Exception as e:
-        print(f"An error occurred during label resolution: {str(e)}")
+        logger.error(f"An error occurred during label resolution: {str(e)}")
     merged_df_json = merged_df.to_json(orient='records')
     
     return JSONResponse(content=merged_df_json)
